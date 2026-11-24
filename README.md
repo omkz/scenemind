@@ -8,7 +8,7 @@ SceneMind is a TypeScript SDK that lets AI agents understand and interact with v
 - **Validated actions.** The built-in actions `focus`, `highlight`, `navigate`, and `inspect`, plus custom actions with Zod-validated parameters.
 - **AI output is untrusted.** `runtime.execute` validates every request and never throws. The AI cannot run code or reach app internals.
 - **Framework-agnostic.** The SDK has no rendering, network, or LLM code. Its only runtime dependency is Zod.
-- **Kiro steering.** Project guidance in `.kiro/steering/` makes Kiro identify the assets an app needs, write an asset checklist when one is needed, and follow one workflow for each app.
+- **Kiro steering.** Project guidance in `.kiro/steering/` makes Kiro propose defaults for your idea, identify the assets an app needs, and follow one workflow for each app.
 
 ## Installation
 
@@ -31,11 +31,13 @@ No Kiro hooks are needed.
 
 ## Start a new project and create a spec
 
-1. In Kiro, create a new spec, choose **Requirements**, and describe your application idea.
-2. Answer Kiro's questions. Kiro proposes the technical choices, such as the viewer and UI framework, for you to adjust. If Kiro creates `apps/<app-name>/ASSETS.md`, provide the assets it lists.
-3. Review the requirements, design, and tasks, then run the tasks.
+1. In Kiro, create a new spec, choose **Requirements**, and describe your application idea. A sentence or two is enough.
+2. Kiro proposes defaults for what you left out (scenes, AI behavior, viewer, UI) and asks only the questions it needs, a few at a time.
+3. Kiro checks the repository for existing assets and tells you which files are still needed and where to put them. Describe each asset in your own words (title, short description, source link). No special format is required.
+4. Kiro presents one consolidated proposal. Approve or adjust it before technical design starts.
+5. Review the requirements, design, and tasks, then run the tasks.
 
-Kiro creates your app in `apps/<app-name>/` as a pnpm workspace package that uses the SDK (`"scenemind": "workspace:*"`).
+Kiro handles scene and entity ids, metadata, scene definitions, schemas, and SDK integration. It keeps the names and descriptions you provide. It creates your app in `apps/<app-name>/` as a pnpm workspace package that uses the SDK (`"scenemind": "workspace:*"`).
 
 ### Example spec prompt
 
@@ -49,13 +51,14 @@ uses the descriptions we provide, and says so when it does not know.
 
 ## Asset preparation
 
-Kiro works out which assets your idea needs while it writes the spec. If the app needs external assets or content (images, models, audio, factual text, measured positions), it creates `apps/<app-name>/ASSETS.md` during requirements preparation. Apps built only from generated or text content get no checklist.
+Kiro works out which assets your idea needs while it writes the spec. It looks at existing files first, then asks only for what is missing. If the app needs no external assets, this step is skipped.
 
-- Assets can be your own, procedurally generated, AI-generated, or licensed for your use (public domain, CC0, CC BY, CC BY-SA, or similar). The checklist records the origin of each. Licensed items record credit, source, and license.
-- Fictional content is fine when your app is fictional. Factual content needs a source.
-- Kiro never invents facts, attribution, licenses, or verification results. Anything you have not provided stays `missing`.
-- Only a `required` item that is `missing` blocks release. Fixtures are for development and tests only.
-- You verify entity positions yourself only when they must match something real.
+- Kiro creates `apps/<app-name>/assets/` as the intake folder and tells you which files to add. Each app then chooses its own final asset layout during implementation, and your original files are kept.
+- Assets can be your own, procedurally generated, AI-generated, or licensed for your use (public domain, CC0, CC BY, CC BY-SA, or similar).
+- Factual apps use your information or verified sources. Fictional apps can use generated creative content, marked as fictional.
+- Kiro never invents facts, attribution, licenses, or verification results. Anything you have not provided stays missing, and development uses clearly marked fixtures meanwhile.
+- `apps/<app-name>/ASSETS.md` is Kiro's internal checklist. You do not need to edit it.
+- You confirm entity positions yourself only when they must match something real.
 - API keys are configuration, not assets. They go in `.env` (git-ignored), and `.env.example` lists the names.
 
 ## Build and run

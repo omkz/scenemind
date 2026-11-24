@@ -17,20 +17,24 @@ Use this guide when the user asks for a spec or an application built on SceneMin
 
 ## Workflow
 
-1. **Concept.** Clarify the experience: who uses it, which scenes exist, what the AI guide may do.
-2. **Assets.** Identify the external assets and content the concept needs, without being asked. Follow the asset-checklist steering. Summarize what is needed and what is missing.
-3. **Scene definitions.** Define scenes, entities, metadata, and any custom actions.
-4. **Spec.** Write requirements, design, and tasks. Requirements cover scene definitions, AI interaction, testing, and assets when the app needs any.
-5. **Viewer.** Integrate the viewer with the runtime.
-6. **Verify.** Check entity positions and interactions with the developer, when position accuracy matters.
-7. **AI.** Integrate the guide.
-8. **Finish.** Test, write the app README, and run the app.
+The developer may start with only a short idea. Kiro fills the gaps and asks only what it cannot decide.
+
+1. **Concept.** Read the idea. Propose defaults for anything missing: audience, scenes, entities, what the AI guide may do, tone, viewer, and UI. Mark each as a default the developer can change.
+2. **Assets.** Work out which assets and content the concept needs. Inspect the repository first (`apps/<app-name>/`, its assets directory, existing files) and reuse what is there. Follow the asset-checklist steering.
+3. **Questions.** Ask only essential questions, a few at a time, in plain language. Skip anything already answered or inferable from existing files.
+4. **Proposal.** Present one consolidated proposal for approval: concept, scenes and entities, AI behavior, technical choices, assets (present, missing, where to put them), and open questions. Do not start technical design until the developer approves or adjusts it.
+5. **Spec.** Write requirements, design, and tasks. Requirements cover scene definitions, AI interaction, testing, and assets when the app needs any.
+6. **Build.** Create scene definitions, integrate the viewer and the guide, and verify positions with the developer when position accuracy matters.
+7. **Finish.** Test, write the app README, and run the app.
 
 Spec rules:
-- If the app needs external assets or content, create `apps/<app-name>/ASSETS.md` while preparing the requirements, before design and tasks. Otherwise, state in the requirements that none are needed.
-- The developer needs to supply only the application concept and desired AI interactions. Propose technical choices (viewer, UI framework) yourself, using the defaults in the technology steering, and let the developer adjust them.
+- The developer supplies only an idea and, where needed, assets or facts. Kiro handles scene ids, entity ids, metadata structure, scene definitions, schemas, and SDK integration. Propose technical choices using the technology steering and let the developer adjust them.
+- Preserve names, titles, and descriptions the developer gives. Do not rename or rewrite them. Derive ids from them and keep the original wording as display text.
+- Factual apps use only developer-provided information or verified sources. Fictional apps may use generated creative content, marked as fictional.
+- If the app needs external assets or content, keep `apps/<app-name>/ASSETS.md` as an internal checklist, created while preparing requirements. The developer does not fill it in. Otherwise, state in the requirements that no assets are needed and skip asset preparation.
+- Developer-provided assets go in `apps/<app-name>/assets/` (intake). The app chooses its final layout during implementation and keeps the originals.
 - Tasks that depend on assets not yet available use clearly marked fixtures.
-- Ask clarifying questions when the concept leaves scenes, entities, or assets undefined.
+- Ask when the concept leaves scenes, entities, or assets undefined and no sensible default exists.
 
 ## Scene Definitions
 
