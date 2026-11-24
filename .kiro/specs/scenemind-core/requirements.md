@@ -16,9 +16,13 @@ The first version is intentionally small. It supports four built-in actions: `fo
 - **Entity**: A generic object inside a Scene that an AI agent may refer to, identified by an Entity_ID and carrying a label, an optional description, and optional application-defined metadata.
 - **Entity_ID**: A non-empty string that uniquely identifies an Entity within a Scene_Graph.
 - **Scene_Graph**: The validated collection of all Scenes and Entities registered with a Runtime.
-- **Runtime**: The SceneMind component that holds the Scene_Graph, the Current_Scene, and the ActionRegistry, and that processes Action_Requests.
+- **Runtime**: The SceneMind component that holds the Scene_Graph, the Current_Scene, the Focused_Entity_ID, and the ActionRegistry, and that processes Action_Requests and Focus_Sync_Requests.
 - **Current_Scene**: The Scene that the Runtime currently treats as active.
-- **SceneContext**: A read-only, JSON-serializable snapshot produced by the Runtime that describes the Current_Scene, its Entities, the Scenes reachable by `navigate`, and the Available_Actions.
+- **Focused_Entity_ID**: The Entity_ID of the Entity that the Runtime currently treats as focused in the Current_Scene, or `null` when no Entity is focused.
+- **Focus_Sync_API**: The Runtime method `syncFocus` that an application calls to report a focus change initiated by the user rather than by an AI agent.
+- **Focus_Sync_Request**: An untrusted input value of type `unknown` passed to the Focus_Sync_API, which is valid only when the value is an Entity_ID string or `null`.
+- **Focus_Sync_Result**: A typed value returned by the Focus_Sync_API, which is either a success result containing the resulting Focused_Entity_ID or a failure result containing an Error_Code and a message, with the two variants distinguished by a boolean `ok` field.
+- **SceneContext**: A read-only, JSON-serializable snapshot produced by the Runtime that describes the Current_Scene, its Entities, the Focused_Entity_ID, the Scenes reachable by `navigate`, and the Available_Actions.
 - **SceneAction**: A typed action definition consisting of an action type name, a Zod schema for its parameters, a description for AI agents, and a Parameter_Summary.
 - **Parameter_Summary**: A JSON-serializable list supplied by the author of a SceneAction when the SceneAction is defined, where each entry contains a parameter name string, a short type label string (for example `"string"`), and a short description string. A Parameter_Summary is plain data and is not generated from the Zod schema.
 - **Action_Request**: An untrusted input value, typically produced by an AI agent, that names an action type and supplies parameters.
@@ -77,7 +81,8 @@ The first version is intentionally small. It supports four built-in actions: `fo
 6. WHEN the Runtime includes a Parameter_Summary in a SceneContext, THE Runtime SHALL use the Parameter_Summary exactly as supplied in the SceneAction definition.
 7. THE SceneMind SHALL provide a Zod schema for SceneContext.
 8. FOR ALL SceneContext values produced by the Runtime, serializing the SceneContext to JSON and parsing the JSON with the SceneContext schema SHALL produce a value equal to the original SceneContext (round-trip property).
-9. WHEN the Runtime returns a SceneContext, THE Runtime SHALL return a value whose modification leaves the Scene_Graph and the Current_Scene unchanged.
+9. WHEN the Runtime returns a SceneContext, THE Runtime SHALL return a value whose modification leaves the Scene_Graph, the Current_Scene, and the Focused_Entity_ID unchanged.
+10. WHEN an application requests a SceneContext, THE Runtime SHALL include a `focusedEntityId` field containing the current Focused_Entity_ID, which is an Entity_ID or `null`.
 
 ### Requirement 4: Register Actions in the ActionRegistry
 
@@ -111,6 +116,8 @@ The first version is intentionally small. It supports four built-in actions: `fo
 10. IF the Action_Handler attached to `navigate` throws an error or returns a rejected promise, THEN THE Runtime SHALL keep the Current_Scene unchanged.
 11. WHEN the Runtime executes a Validated_Action of type `inspect`, THE Runtime SHALL return a success Action_Result containing the Entity_ID, label, description, and metadata of the inspected Entity without invoking any Action_Handler.
 12. WHEN the Runtime executes a Validated_Action of type `inspect`, THE Runtime SHALL keep the Scene_Graph and the Current_Scene unchanged.
+13. WHEN the Action_Handler attached to `focus` completes successfully, THE Runtime SHALL set the Focused_Entity_ID to the `entityId` parameter.
+14. WHEN the Runtime sets the Current_Scene after the Action_Handler attached to `navigate` completes successfully, THE Runtime SHALL set the Focused_Entity_ID to `null`.
 
 ### Requirement 6: Determine Available Actions
 
@@ -140,7 +147,7 @@ The first version is intentionally small. It supports four built-in actions: `fo
 8. IF the parameters of an Action_Request fail the Zod schema of the named SceneAction, THEN THE Runtime SHALL return a failure Action_Result with Error_Code `INVALID_PARAMETERS` and the schema validation messages.
 9. IF an Action_Request of type `navigate` contains a Scene_ID that does not exist in the Scene_Graph or is not reachable from the Current_Scene, THEN THE Runtime SHALL return a failure Action_Result with Error_Code `INVALID_SCENE_ID`.
 10. IF an Action_Request of type `focus`, `highlight`, or `inspect` contains an Entity_ID that does not belong to an Entity of the Current_Scene, THEN THE Runtime SHALL return a failure Action_Result with Error_Code `INVALID_ENTITY_ID`.
-11. IF an Action_Request fails any validation check, THEN THE Runtime SHALL leave the Scene_Graph and the Current_Scene unchanged and invoke no Action_Handler.
+11. IF an Action_Request fails any validation check, THEN THE Runtime SHALL leave the Scene_Graph, the Current_Scene, and the Focused_Entity_ID unchanged and invoke no Action_Handler.
 12. THE Runtime SHALL pass to the Action_Handler only the parameter values produced by the Zod schema parse, excluding any fields absent from the SceneAction schema.
 13. THE SceneMind SHALL process Action_Request values only as data, without evaluating any part of an Action_Request as code.
 14. FOR ALL Action_Request values, THE Runtime SHALL return an Action_Result instead of throwing an exception (total function property).
@@ -170,3 +177,24 @@ The first version is intentionally small. It supports four built-in actions: `fo
 4. THE SceneMind SHALL include a Vitest test suite that runs from `packages/scenemind/` in single-run mode.
 5. THE SceneMind SHALL include tests that cover each Error_Code defined in the Glossary.
 6. THE SceneMind SHALL include a test that produces Error_Code `NO_HANDLER` by submitting a direct Action_Request for a Permitted_Action that is a Handler_Backed_Action without an attached Action_Handler.
+
+### Requirement 10: Track Focused Entity
+
+**User Story:** As an application developer, I want SceneMind to track which Entity is focused and to accept validated reports of user-driven focus changes, so that the AI agent sees the same focus as the user.
+
+#### Acceptance Criteria
+
+1. WHEN an application creates a Runtime, THE Runtime SHALL set the Focused_Entity_ID to `null`.
+2. THE Runtime SHALL keep the Focused_Entity_ID equal to `null` or to the Entity_ID of an Entity in the Current_Scene (state invariant).
+3. IF the Action_Handler attached to `focus` throws an error or returns a rejected promise, THEN THE Runtime SHALL keep the Focused_Entity_ID unchanged.
+4. WHEN the Runtime executes a Validated_Action of type `highlight` or `inspect`, THE Runtime SHALL keep the Focused_Entity_ID unchanged.
+5. THE Focus_Sync_API SHALL accept a Focus_Sync_Request as a value of type `unknown` and validate the Focus_Sync_Request with a Zod schema.
+6. WHEN the Focus_Sync_API receives `null`, THE Runtime SHALL set the Focused_Entity_ID to `null` and return a success Focus_Sync_Result.
+7. WHEN the Focus_Sync_API receives an Entity_ID that belongs to an Entity of the Current_Scene, THE Runtime SHALL set the Focused_Entity_ID to that Entity_ID and return a success Focus_Sync_Result.
+8. IF the Focus_Sync_API receives a value that is neither a non-empty string nor `null`, THEN THE Focus_Sync_API SHALL return a failure Focus_Sync_Result with Error_Code `INVALID_REQUEST` and keep the Focused_Entity_ID unchanged.
+9. IF the Focus_Sync_API receives an Entity_ID that does not belong to an Entity of the Current_Scene, THEN THE Focus_Sync_API SHALL return a failure Focus_Sync_Result with Error_Code `INVALID_ENTITY_ID` and keep the Focused_Entity_ID unchanged.
+10. WHEN the Focus_Sync_API processes a Focus_Sync_Request, THE Runtime SHALL keep the Scene_Graph and the Current_Scene unchanged and invoke no Action_Handler.
+11. THE Focus_Sync_API SHALL process a Focus_Sync_Request independently of the Current_Scene's permitted action type names and of the Available_Actions.
+12. FOR ALL Focus_Sync_Request values, THE Focus_Sync_API SHALL return a Focus_Sync_Result instead of throwing an exception (total function property).
+13. THE SceneMind SHALL provide a Zod schema and a TypeScript type for Focus_Sync_Result.
+14. THE SceneMind SHALL include tests that cover each success and failure case of the Focus_Sync_API and the state invariant for the Focused_Entity_ID.
