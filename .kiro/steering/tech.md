@@ -5,9 +5,10 @@ inclusion: always
 # Technology
 
 Core:
-- TypeScript
-- Zod for schema validation
+- TypeScript 5.5+ with strict mode
+- Zod 4 for schema validation
 - Vitest for testing
+- fast-check for property-based testing
 
 Example applications:
 - React
@@ -24,3 +25,11 @@ MVP constraints:
 - No database
 - No authentication
 - No unnecessary backend infrastructure
+
+## Common Commands
+
+From `packages/scenemind/`:
+- `pnpm build` - Compile TypeScript to dist/
+- `pnpm typecheck` - Type check without emitting
+- `pnpm test` - Run Vitest test suite
+- `pnpm smoke` - Run smoke test script

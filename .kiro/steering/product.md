@@ -14,9 +14,21 @@ SceneMind provides structured scene context to AI agents and exposes typed, vali
 
 AI agents must never directly manipulate application internals or execute arbitrary code.
 
-Core concepts:
-- Scene
-- Entity
-- SceneContext
-- SceneAction
-- ActionRegistry
+## Core Concepts
+
+- **Scene** - A named location/view in a virtual environment
+- **Entity** - An object inside a Scene that AI can reference
+- **SceneContext** - JSON-serializable snapshot for AI agents
+- **SceneAction** - Typed action with Zod-validated parameters
+- **ActionRegistry** - Stores and validates actions
+
+## Built-in Actions
+
+- `focus` - Bring an entity into focus
+- `highlight` - Highlight an entity
+- `navigate` - Transition to another scene
+- `inspect` - Return entity data (handled by SceneMind, no handler needed)
+
+## Key Principle
+
+SceneMind validates all action requests before execution. AI output is treated as untrusted data.
