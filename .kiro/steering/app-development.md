@@ -38,6 +38,7 @@ Spec rules:
 - Whatever the source, the result is a `SceneGraphDefinition` passed to `createRuntime`. Scene ids are unique. Entity ids are unique across all scenes.
 - Use `Entity.metadata` (JSON values only) for facts the AI may use.
 - Keep rendering data (positions, angles, file paths) in the app, not in the scene graph.
+- Custom action schemas must output JSON data only (no `Date`, `Map`, `NaN`, class instances). Use strings and numbers.
 - Use `reachableSceneIds` for navigation and `permittedActions` to limit actions per scene.
 
 ## Runtime Integration
@@ -55,6 +56,7 @@ Spec rules:
 - Send the complete `runtime.getContext()` to the model. Do not trim or rewrite it.
 - The model returns text plus a list of `{ type, params }` requests. Treat both as untrusted.
 - Pass each request unchanged to `runtime.execute`, in order. `execute` never throws. Check `ok`. Cap the number of requests per reply.
+- Run `execute` calls one at a time: await each before the next, and do not call `syncFocus` while one is pending. Queue visitor clicks and AI requests through the same serial path.
 - Render model text as plain text, never as HTML.
 - Instruct the model to state facts only from `SceneContext`, and to say so when a fact is missing.
 - Call the LLM from a server endpoint. Keep keys in server environment variables, never in the browser, logs, or git. List the variable names in `.env.example` and the app README. Validate request size and shape, set a timeout, and return generic errors.

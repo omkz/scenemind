@@ -65,7 +65,17 @@ export interface Runtime<A extends readonly SceneAction[] = readonly []> {
     type: K,
     handler: ActionHandler<K, ParamsOf<A, K>>,
   ): void;
-  /** Validates and runs an Action_Request. Never throws and never rejects. */
+  /**
+   * Validates and runs an Action_Request. Never throws and never rejects.
+   *
+   * Calls are not queued. Each call validates against the state at its start and commits after
+   * its handler resolves, so overlapping calls can validate against stale state. Applications
+   * must wait for one `execute` to settle before starting the next, and must not call
+   * `syncFocus` while an `execute` is pending.
+   *
+   * A custom action's parsed parameters must be JSON data (no Date, Map, NaN, and so on).
+   * Otherwise the result is `INVALID_PARAMETERS` and no handler runs.
+   */
   execute(request: unknown): Promise<ActionResult>;
   /** Synchronizes Focused_Entity_ID from the UI. Never throws; a failure changes nothing. */
   syncFocus(input: unknown): FocusSyncResult;
@@ -99,6 +109,29 @@ function deepFreeze<T>(value: T): T {
     for (const child of Object.values(value as Record<string, unknown>)) deepFreeze(child);
   }
   return value;
+}
+
+/**
+ * True when `value` is what JSON.parse(JSON.stringify(value)) would give back: null, booleans,
+ * strings, finite numbers, dense arrays, and plain objects of such values. An object property
+ * whose value is `undefined` counts as absent, as it does for an optional field. Anything else
+ * (Date, Map, Set, class instances, NaN, Infinity, functions, symbols, sparse arrays, cycles)
+ * would be changed or dropped by serialization.
+ */
+function isJsonSafe(value: unknown, ancestors: unknown[] = []): boolean {
+  if (value === null || typeof value === 'string' || typeof value === 'boolean') return true;
+  if (typeof value === 'number') return Number.isFinite(value);
+  if (typeof value !== 'object' || ancestors.includes(value)) return false;
+  const next = [...ancestors, value];
+  if (Array.isArray(value)) {
+    for (let i = 0; i < value.length; i++) {
+      if (!(i in value) || !isJsonSafe(value[i], next)) return false;
+    }
+    return true;
+  }
+  const proto: unknown = Object.getPrototypeOf(value);
+  if (proto !== Object.prototype && proto !== null) return false;
+  return Object.values(value).every((v) => v === undefined || isJsonSafe(v, next));
 }
 
 /** `Handler failed: <message>` for an Error with a readable string message, else `Handler failed.` */
@@ -348,6 +381,8 @@ export function createRuntime<const A extends readonly SceneAction[] = readonly 
             parsed.error.issues.map((i) => ({ path: formatPath(i.path), message: i.message })),
           );
         }
+        // A schema output that serialization would change must not reach a handler.
+        if (!isJsonSafe(parsed.data)) throw new Error('not JSON-safe');
         const json: string | undefined = JSON.stringify(parsed.data);
         const copy: unknown = json === undefined ? undefined : JSON.parse(json);
         if (copy === null || typeof copy !== 'object' || Array.isArray(copy)) throw new Error('not an object');

@@ -89,6 +89,11 @@ Everything is exported from `scenemind`.
 | `SceneGraphDefinitionSchema`, `SceneContextSchema`, `EntitySchema`, `ActionResultSchema`, ... | Zod schemas, with matching TypeScript types such as `SceneContext` and `ActionResult`. |
 | `SceneMindError` | Error thrown for invalid definitions, with a `code`. |
 
+**Rules for applications**
+
+- **Run one `execute` at a time.** Calls are not queued. Each validates against the state when it starts and commits after its handler finishes. Two overlapping calls can both succeed even though the second would fail if run after the first (for example two `navigate` requests from the same scene). Wait for each call to settle before starting the next, and do not call `syncFocus` while one is pending.
+- **Custom action parameters must be JSON data.** After your Zod schema runs, the result must survive JSON serialization unchanged. A schema that outputs a `Date`, `Map`, `Set`, class instance, `NaN`, `Infinity`, function, or sparse array makes `execute` return `INVALID_PARAMETERS`, and no handler runs. Use strings and numbers instead (for example an ISO date string).
+
 Result error codes: `INVALID_REQUEST`, `UNKNOWN_ACTION`, `ACTION_UNAVAILABLE`, `INVALID_PARAMETERS`, `INVALID_SCENE_ID`, `INVALID_ENTITY_ID`, `NO_HANDLER`, `HANDLER_FAILED`.
 
 ### Example
