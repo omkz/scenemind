@@ -27,7 +27,8 @@ Use this guide when the user asks for a spec or an application built on SceneMin
 8. **Finish.** Test, write the app README, and run the app.
 
 Spec rules:
-- If the app needs external assets or content, the first task creates `apps/<app-name>/ASSETS.md`. Otherwise, state in the requirements that none are needed.
+- If the app needs external assets or content, create `apps/<app-name>/ASSETS.md` while preparing the requirements, before design and tasks. Otherwise, state in the requirements that none are needed.
+- The developer needs to supply only the application concept and desired AI interactions. Propose technical choices (viewer, UI framework) yourself, using the defaults in the technology steering, and let the developer adjust them.
 - Tasks that depend on assets not yet available use clearly marked fixtures.
 - Ask clarifying questions when the concept leaves scenes, entities, or assets undefined.
 
@@ -64,4 +65,4 @@ Spec rules:
 - Each application owns its assets, scene definitions, viewer, and AI integration.
 - SceneMind remains independent of rendering technologies and application domains.
 - Document setup, configuration, run instructions, and asset requirements in each application's README.
-- Do not add a database, authentication, or a scene editor unless the spec asks for it.
+- Avoid unnecessary infrastructure. Add a database, authentication, a backend, or an editor only when the application's spec requires it.

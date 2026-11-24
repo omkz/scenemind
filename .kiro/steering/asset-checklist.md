@@ -10,7 +10,7 @@ Identify asset needs while creating the spec, without waiting to be asked.
 
 ## When to create ASSETS.md
 
-Create `apps/<app-name>/ASSETS.md` only if the app needs external assets or content, such as images, models, audio, factual text, or measured positions. If everything is generated in code or the app is text only, skip the file and say so in the requirements.
+Create `apps/<app-name>/ASSETS.md` during requirements preparation, before design and tasks, and only if the app needs external assets or content, such as images, models, audio, factual text, or measured positions. If everything is generated in code or the app is text only, skip the file and say so in the requirements.
 
 ## Identify the needs
 

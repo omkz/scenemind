@@ -32,7 +32,7 @@ No Kiro hooks are needed.
 ## Start a new project and create a spec
 
 1. In Kiro, create a new spec, choose **Requirements**, and describe your application idea.
-2. Answer Kiro's questions. If Kiro creates `apps/<app-name>/ASSETS.md`, provide the assets it lists.
+2. Answer Kiro's questions. Kiro proposes the technical choices, such as the viewer and UI framework, for you to adjust. If Kiro creates `apps/<app-name>/ASSETS.md`, provide the assets it lists.
 3. Review the requirements, design, and tasks, then run the tasks.
 
 Kiro creates your app in `apps/<app-name>/` as a pnpm workspace package that uses the SDK (`"scenemind": "workspace:*"`).
@@ -49,7 +49,7 @@ uses the descriptions we provide, and says so when it does not know.
 
 ## Asset preparation
 
-Kiro works out which assets your idea needs while it writes the spec. If the app needs external assets or content (images, models, audio, factual text, measured positions), it creates `apps/<app-name>/ASSETS.md`. Apps built only from generated or text content get no checklist.
+Kiro works out which assets your idea needs while it writes the spec. If the app needs external assets or content (images, models, audio, factual text, measured positions), it creates `apps/<app-name>/ASSETS.md` during requirements preparation. Apps built only from generated or text content get no checklist.
 
 - Assets can be your own, procedurally generated, AI-generated, or licensed for your use (public domain, CC0, CC BY, CC BY-SA, or similar). The checklist records the origin of each. Licensed items record credit, source, and license.
 - Fictional content is fine when your app is fictional. Factual content needs a source.
@@ -148,3 +148,7 @@ apps/<app-name>/      Your applications (created by specs)
 .kiro/steering/       Guidance Kiro follows in every session
 .kiro/specs/          Specs for your applications
 ```
+
+## License
+
+SceneMind is released under the [MIT License](LICENSE).

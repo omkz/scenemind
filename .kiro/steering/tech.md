@@ -23,15 +23,10 @@ AI integration:
 - LLM calls run on a server-side endpoint. API keys come from server environment variables and never reach the browser, logs, or git.
 - List the variable names in `.env.example`. `.env` stays git-ignored.
 
-Voice:
-- LiveKit will be added after text interaction is stable
-- Python may be used for the LiveKit agent
-
-MVP constraints:
-- No database
-- No authentication
-- No scene editor
-- No backend beyond the minimal LLM endpoint
+Infrastructure:
+- Each application's spec decides what it needs (backend, database, authentication, editor, voice).
+- Avoid unnecessary infrastructure by default. Prefer the simplest approach, client-only when it suffices.
+- Voice is optional. If a spec asks for it, LiveKit is one option.
 
 ## Common Commands
 
