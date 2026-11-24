@@ -4,11 +4,11 @@ inclusion: always
 
 # SceneMind
 
-SceneMind is a reusable SDK that enables AI agents to understand and interact with virtual environments.
+SceneMind is a reusable SDK that enables AI agents to understand and interact with virtual environments. The repository is also a Kiro starter kit: a developer clones it, opens it in Kiro, and creates a spec that describes an application idea.
 
-SceneMind is the product. Living Museum is the first example application.
+SceneMind is the product. Applications built on it live in `apps/` and are examples of its use.
 
-The core SDK must remain domain-agnostic and reusable across museums, heritage sites, tourism, education, games, and other interactive environments.
+The core SDK must remain domain-agnostic and reusable across museums, heritage sites, tourism, education, games, and other interactive environments. It does not know about rendering, networking, or any LLM.
 
 SceneMind provides structured scene context to AI agents and exposes typed, validated actions that agents may request.
 
